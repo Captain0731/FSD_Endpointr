@@ -1,167 +1,251 @@
-# Demo-main API
+# Demo — Backend REST API with Express & MongoDB
 
-A Node.js RESTful API for managing products, orders, carts, students, and users.
-
-## Getting Started
-
-1. **Install dependencies:**
-   ```
-npm install
-   ```
-2. **Start the server:**
-   ```
-node app.js
-   ```
-   The server runs on `http://localhost:3000` by default.
+A Node.js backend application built with **Express.js** and **MongoDB (Mongoose)** providing REST APIs for `/products`, `/users`, `/cart`, `/orders`, and `/students` with data validation middleware and server-side error handling.
 
 ---
 
-## API Endpoints
+## Table of Contents
 
-### Products
-- `GET /products` — Get all products
-- `GET /products/:id` — Get product by ID
-- `POST /products` — Create product
-  - Body: `{ "name": string, "price": number, "description"?: string }`
-- `PUT /products/:id` — Update product by ID
-- `DELETE /products/:id` — Delete product by ID
-
-### Orders
-- `POST /orders` — Place order
-  - Body: `{ "userId": string, "items": object, "totalAmount": number }`
-- `GET /orders` — Get order history
-
-### Cart
-- `GET /cart` — Get cart
-- `POST /cart/add` — Add to cart
-  - Body: `{ "userId": string, "productId": number, "quantity": number }`
-- `POST /cart/remove` — Remove from cart
-
-### Students
-- `GET /students` — Get all students
-- `GET /students/:id` — Get student by ID
-- `POST /students` — Create student
-- `PUT /students/:id` — Update student
-- `DELETE /students/:id` — Delete student
-
-### Users
-- `GET /users` — Get all users
-- `GET /users/:id` — Get user by ID
-- `POST /users` — Create user
-  - Body: `{ "name": string, "email": string }`
-- `PUT /users/:id` — Update user
-- `DELETE /users/:id` — Delete user
-
----
-
-## Example Request (PowerShell)
-
-```
-Invoke-RestMethod -Uri http://localhost:3000/products -Method Post -Body '{"name": "Sample Product", "price": 100}' -ContentType "application/json"
-```
+- [Project Structure](#project-structure)
+- [Tech Stack](#tech-stack)
+- [Installation](#installation)
+- [Start the Server](#start-the-server)
+- [Seed Dummy Data](#seed-dummy-data)
+- [Database Schemas](#database-schemas)
+- [API Endpoints](#api-endpoints)
+- [Middleware](#middleware)
+- [Error Handling](#error-handling)
 
 ---
 
 ## Project Structure
 
-- `app.js` — Main application file
-- `controllers/` — Route logic
-- `routes/` — API route definitions
-- `middleware/` — Custom middleware (validation, error handling)
-
-
-
-## How to Create a New API Endpoint
-
-Follow these steps to add a new endpoint for any resource (e.g., products, orders, users, etc.):
-
-### 1. Create or Update the Controller
-Add a function in the appropriate controller file (e.g., `controllers/productcontroller.js`).
-
-Example for creating a product:
-```js
-exports.createProduct = (req, res) => {
-  // Your logic to create a product
-};
 ```
-
-### 2. Define the Route
-Add a route in the corresponding route file (e.g., `routes/productroute.js`).
-
-Example:
-```js
-const express = require('express');
-const router = express.Router();
-const productController = require('../controllers/productcontroller');
-
-router.post('/', productController.createProduct);
-
-module.exports = router;
+Demo-main/
+├── controllers/
+│   ├── studentcontroller.js   # Student CRUD operations
+│   ├── userController.js      # User CRUD operations
+│   ├── productController.js   # Product CRUD operations
+│   ├── orderController.js     # Order CRUD operations
+│   └── cartController.js      # Cart CRUD operations
+├── middleware/
+│   ├── validate.js            # Request validation middleware
+│   └── errorHandler.js        # Global error handling middleware
+├── models/
+│   ├── students.js            # Student schema
+│   ├── User.js                # User schema
+│   ├── Product.js             # Product schema
+│   ├── Order.js               # Order schema
+│   └── Cart.js                # Cart schema
+├── routes/
+│   ├── studentroute.js        # /students routes
+│   ├── userRoutes.js          # /users routes
+│   ├── productRoutes.js       # /products routes
+│   ├── orderRoutes.js         # /orders routes
+│   └── cartRoutes.js          # /cart routes
+├── app.js                     # Express app entry point + MongoDB connection
+├── seed.js                    # Script to populate database with dummy data
+└── package.json               # Dependencies & scripts
 ```
-
-### 3. Register the Route in app.js
-Import and use the route in `app.js`:
-```js
-const productRoutes = require('./routes/productroute');
-app.use('/products', productRoutes);
-```
-
-### 4. (Optional) Add Validation Middleware
-If you want to validate request data, use a middleware before your controller in the route:
-```js
-const validateRequest = require('../middleware/validation');
-const productSchema = { name: { type: 'string', required: true }, price: { type: 'number', required: true } };
-router.post('/', validateRequest(productSchema), productController.createProduct);
-```
-
-### 5. Test Your Endpoint
-Use Postman, curl, or PowerShell to send requests to your new endpoint.
 
 ---
 
-## Step-by-Step Examples for All Main Resources
+## Tech Stack
 
-### Products
-- **POST /products**
-  - Controller: `createProduct` in `controllers/productcontroller.js`
-  - Route: `router.post('/', validateRequest(productSchema), productController.createProduct);` in `routes/productroute.js`
-  - Example request body:
-    ```json
-    { "name": "Sample Product", "price": 100, "description": "Optional desc" }
-    ```
+| Technology | Purpose              |
+|------------|----------------------|
+| Node.js    | JavaScript runtime   |
+| Express.js | Web framework        |
+| MongoDB    | NoSQL database       |
+| Mongoose   | MongoDB ODM library  |
 
-### Orders
-- **POST /orders**
-  - Controller: `placeOrder` in `controllers/ordercontroller.js`
-  - Route: `router.post('/', validateRequest(orderSchema), orderController.placeOrder);` in `routes/orderroute.js`
-  - Example request body:
-    ```json
-    { "userId": "user123", "items": { "productId": 1, "quantity": 2 }, "totalAmount": 200 }
-    ```
+---
 
-### Cart
-- **POST /cart/add**
-  - Controller: `addToCart` in `controllers/cartcontroller.js`
-  - Route: `router.post('/add', validateRequest(cartAddSchema), cartController.addToCart);` in `routes/cartroute.js`
-  - Example request body:
-    ```json
-    { "userId": "user123", "productId": 1, "quantity": 2 }
-    ```
+## Installation
 
-### Students
-- **POST /students**
-  - Controller: `createStudent` in `controllers/studentcontroller.js`
-  - Route: `router.post('/', studentController.createStudent);` in `routes/studentroute.js`
-  - Example request body:
-    ```json
-    { "name": "John Doe", "age": 20 }
-    ```
+```bash
+cd Demo-main
+npm install
+```
 
-### Users
-- **POST /users**
-  - Controller: `createUser` in `controllers/usercontroller.js`
-  - Route: `router.post('/', validateRequest(userSchema), userController.createUser);` in `routes/userroute.js`
-  - Example request body:
-    ```json
-    { "name": "Jane Doe", "email": "jane@example.com" }
-    ```
+---
+
+## Start the Server
+
+```bash
+node app.js
+```
+
+**Output:**
+```
+MongoDB Connected
+Server running on port 3000
+```
+
+The API is accessible at `http://localhost:3000`.
+
+**MongoDB Connection:** `mongodb://localhost:27017/Demo`
+
+---
+
+## Seed Dummy Data
+
+```bash
+node seed.js
+```
+
+This inserts 5 users, 8 products, 3 orders, and 2 carts into the database.
+
+---
+
+## Database Schemas
+
+### User Schema
+
+| Field      | Type   | Required | Constraints                              |
+|------------|--------|----------|------------------------------------------|
+| `name`     | String | Yes      | Trimmed                                  |
+| `email`    | String | Yes      | Unique, lowercase, valid email format    |
+| `password` | String | Yes      | Minimum 6 characters                     |
+| `role`     | String | No       | Enum: `customer`, `admin` (default: `customer`) |
+
+### Product Schema
+
+| Field         | Type   | Required | Constraints        |
+|---------------|--------|----------|--------------------|
+| `name`        | String | Yes      | Trimmed            |
+| `description` | String | No       | Default: `""`      |
+| `price`       | Number | Yes      | Min: 0             |
+| `category`    | String | Yes      | —                  |
+| `stock`       | Number | No       | Default: 0, min: 0 |
+| `image`       | String | No       | Default: `""`      |
+
+### Order Schema
+
+| Field             | Type     | Required | Constraints                                                        |
+|-------------------|----------|----------|--------------------------------------------------------------------|
+| `user`            | ObjectId | Yes      | References `User`                                                  |
+| `items`           | Array    | —        | `[{ product (ref Product), quantity (min 1), price }]`             |
+| `totalAmount`     | Number   | Yes      | —                                                                  |
+| `status`          | String   | No       | Enum: `pending`, `processing`, `shipped`, `delivered`, `cancelled` |
+| `shippingAddress` | Object   | No       | `{ street, city, state, zip, country }`                            |
+
+### Cart Schema
+
+| Field  | Type     | Required | Constraints                                  |
+|--------|----------|----------|----------------------------------------------|
+| `user` | ObjectId | Yes      | References `User`, unique (one cart per user) |
+| `items`| Array    | —        | `[{ product (ref Product), quantity (min 1) }]` |
+
+### Student Schema
+
+| Field       | Type   | Required | Constraints |
+|-------------|--------|----------|-------------|
+| `name`      | String | Yes      | —           |
+| `email`     | String | Yes      | Unique      |
+| `course`    | String | No       | —           |
+| `createdAt` | Date   | No       | Auto        |
+
+---
+
+## API Endpoints
+
+### Users — `/users`
+
+| Method | Endpoint | Description       | Validation                              |
+|--------|----------|-------------------|-----------------------------------------|
+| POST   | `/`      | Create a user     | Required: `name`, `email`, `password` + email format |
+| GET    | `/`      | Get all users     | —                                       |
+| GET    | `/:id`   | Get user by ID    | Valid ObjectId                          |
+| PUT    | `/:id`   | Update user       | Valid ObjectId + email format           |
+| DELETE | `/:id`   | Delete user       | Valid ObjectId                          |
+
+### Products — `/products`
+
+| Method | Endpoint | Description             | Validation                                      |
+|--------|----------|-------------------------|-------------------------------------------------|
+| POST   | `/`      | Create a product        | Required: `name`, `price`, `category` + positive numbers |
+| GET    | `/`      | Get all products        | Optional query: `?category=Electronics`         |
+| GET    | `/:id`   | Get product by ID       | Valid ObjectId                                  |
+| PUT    | `/:id`   | Update product          | Valid ObjectId + positive numbers               |
+| DELETE | `/:id`   | Delete product          | Valid ObjectId                                  |
+
+### Orders — `/orders`
+
+| Method | Endpoint | Description             | Validation                                |
+|--------|----------|-------------------------|-------------------------------------------|
+| POST   | `/`      | Create an order         | Required: `user`, `items`, `totalAmount`  |
+| GET    | `/`      | Get all orders          | Optional query: `?user=<userId>`          |
+| GET    | `/:id`   | Get order by ID         | Valid ObjectId                            |
+| PUT    | `/:id`   | Update order            | Valid ObjectId                            |
+| DELETE | `/:id`   | Delete order            | Valid ObjectId                            |
+
+### Cart — `/cart`
+
+| Method | Endpoint                | Description            | Validation                        |
+|--------|-------------------------|------------------------|-----------------------------------|
+| GET    | `/:userId`              | Get user's cart        | Valid ObjectId                    |
+| POST   | `/:userId`              | Add item to cart       | Valid ObjectId + required: `productId` |
+| PUT    | `/:userId/:productId`   | Update item quantity   | Valid ObjectIds + required: `quantity` |
+| DELETE | `/:userId/:productId`   | Remove item from cart  | Valid ObjectIds                   |
+| DELETE | `/:userId`              | Clear entire cart      | Valid ObjectId                    |
+
+### Students — `/students`
+
+| Method | Endpoint | Description          |
+|--------|----------|----------------------|
+| POST   | `/`      | Create a student     |
+| GET    | `/`      | Get all students     |
+| GET    | `/:id`   | Get student by ID    |
+| PUT    | `/:id`   | Update student       |
+| DELETE | `/:id`   | Delete student       |
+
+---
+
+## Middleware
+
+### Data Validation (`middleware/validate.js`)
+
+| Middleware              | Purpose                                          |
+|-------------------------|--------------------------------------------------|
+| `validateRequired(fields)` | Checks that specified fields are present and non-empty |
+| `validateEmail`         | Validates email format using regex               |
+| `validatePositiveNumber(fields)` | Ensures specified fields are positive numbers |
+| `validateObjectId(param)` | Validates MongoDB ObjectId format in URL params |
+
+**Example:** The `POST /products` route uses:
+```
+validateRequired(["name", "price", "category"])
+validatePositiveNumber(["price", "stock"])
+```
+
+### Error Handling (`middleware/errorHandler.js`)
+
+Global error handler that catches and formats errors:
+
+| Error Type                | Status Code | Description                        |
+|---------------------------|-------------|------------------------------------|
+| Mongoose `ValidationError`| 400         | Schema validation failures         |
+| Duplicate key (code 11000)| 409         | Unique constraint violations       |
+| Mongoose `CastError`      | 400         | Invalid ObjectId or type mismatch  |
+| JSON parse error           | 400         | Malformed request body             |
+| Unknown errors             | 500         | Internal Server Error              |
+
+All errors pass through `next(error)` in controllers and are handled centrally by this middleware.
+
+---
+
+## Dummy Data Summary
+
+| Collection | Count | Details                                          |
+|------------|-------|--------------------------------------------------|
+| Users      | 5     | Alice (admin), Bob, Charlie, Diana, Eve          |
+| Products   | 8     | Mouse, Keyboard, Shoes, Backpack, Headphones, Bottle, T-Shirt, Lamp |
+| Orders     | 3     | Bob (delivered), Charlie (shipped), Diana (pending) |
+| Carts      | 2     | Bob (keyboard + bottles), Eve (desk lamp)        |
+
+---
+
+## License
+
+ISC
