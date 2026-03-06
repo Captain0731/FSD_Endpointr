@@ -1,29 +1,39 @@
 const express = require('express');
 const app = express();
-const errorHandler = require('./middleware/errorHandler');
+const mongoose = require("mongoose");
+const errorHandler = require("./middleware/errorHandler");
 
 // Middleware to parse JSON
 app.use(express.json());
 
+mongoose.connect("mongodb://localhost:27017/Demo", {
+})
+.then(() => console.log("MongoDB Connected"))
+.catch((err) => console.log(err));
+
 // Import routes
 const studentRoutes = require('./routes/studentroute');
-const productRoutes = require('./routes/productroute');
-const userRoutes = require('./routes/userroute');
-const cartRoutes = require('./routes/cartroute');
-const orderRoutes = require('./routes/orderroute');
+const userRoutes = require('./routes/userRoutes');
+const productRoutes = require('./routes/productRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const cartRoutes = require('./routes/cartRoutes');
 
 // Use routes
 app.use('/students', studentRoutes);
-app.use('/products', productRoutes);
 app.use('/users', userRoutes);
-app.use('/cart', cartRoutes);
+app.use('/products', productRoutes);
 app.use('/orders', orderRoutes);
+app.use('/cart', cartRoutes);
 
-// Global Error Handler
+// 404 handler for unknown routes
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route ' + req.originalUrl + ' not found' });
+});
+
+// Global error handling middleware (must be last)
 app.use(errorHandler);
 
 // Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(3000, () => {
+  console.log('Server running on port 3000');
 });

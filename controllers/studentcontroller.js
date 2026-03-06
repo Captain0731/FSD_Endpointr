@@ -1,53 +1,59 @@
-// Fake in-memory data (for teaching)
-let students = [
-  { id: 1, name: 'Amit' },
-  { id: 2, name: 'Riya' }
-];
+const Student = require("../models/students");
 
 // GET /students
-exports.getAllStudents = (req, res) => {
-  res.json(students);
+exports.getAllStudents = async (req, res) => {
+  try {
+    const students = await Student.find();
+    res.json(students);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 // GET /students/:id
-exports.getStudentById = (req, res) => {
-  const id = parseInt(req.params.id);
-  const student = students.find(s => s.id === id);
-
-  if (!student) {
-    return res.status(404).json({ message: 'Student not found' });
+exports.getStudentById = async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) return res.status(404).json({ message: "Not found" });
+    res.json(student);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-
-  res.json(student);
 };
 
 // POST /students
-exports.createStudent = (req, res) => {
-  const newStudent = {
-    id: students.length + 1,
-    name: req.body.name
-  };
-
-  students.push(newStudent);
-  res.status(201).json(newStudent);
+exports.createStudent = async (req, res) => {
+  try {
+    const student = new Student(req.body);
+    const savedStudent = await student.save();
+    res.status(201).json(savedStudent);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 };
 
 // PUT /students/:id
-exports.updateStudent = (req, res) => {
-  const id = parseInt(req.params.id);
-  const student = students.find(s => s.id === id);
-
-  if (!student) {
-    return res.status(404).json({ message: 'Student not found' });
+exports.updateStudent = async (req, res) => {
+  try {
+    const updatedStudent = await Student.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!updatedStudent) return res.status(404).json({ message: "Not found" });
+    res.json(updatedStudent);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
-
-  student.name = req.body.name;
-  res.json(student);
 };
 
 // DELETE /students/:id
-exports.deleteStudent = (req, res) => {
-  const id = parseInt(req.params.id);
-  students = students.filter(s => s.id !== id);
-  res.json({ message: 'Student deleted' });
+exports.deleteStudent = async (req, res) => {
+  try {
+    const deletedStudent = await Student.findByIdAndDelete(req.params.id);
+    if (!deletedStudent) return res.status(404).json({ message: "Not found" });
+    res.json({ message: "Student deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
